@@ -58,7 +58,7 @@ class DownloadInterceptor {
       try {
         file.create(Ci.nsIFile.NORMAL_FILE_TYPE, 0o600);
       } catch (e) {
-        dump(`WARNING: interceptDownloadRequest failed to create file: ${e}\n`);
+        dump(`WARNING: interceptDownloadRequest failed to create file: ${e}`);
         return false;
       }
     }
@@ -180,7 +180,6 @@ export class TargetRegistry {
     const domWindowTabListeners = new Map();
 
     const onOpenWindow = async (appWindow) => {
-
       let domWindow;
       if (appWindow instanceof Ci.nsIAppWindow) {
         domWindow = appWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowInternal || Ci.nsIDOMWindow);
@@ -203,6 +202,19 @@ export class TargetRegistry {
         await helper.awaitEvent(domWindow, 'DOMContentLoaded');
       }
 
+      // Firefox 150+: chrome window may report readyState=complete before
+      // gBrowser is populated. Wait for it if missing.
+      if (!domWindow.gBrowser) {
+        await new Promise((resolve, reject) => {
+          const start = Date.now();
+          const tick = () => {
+            if (domWindow.gBrowser) return resolve();
+            if (Date.now() - start > 15000) return reject(new Error('gBrowser never populated'));
+            domWindow.setTimeout(tick, 50);
+          };
+          tick();
+        });
+      }
       if (!domWindow.gBrowser)
         return;
       const tabContainer = domWindow.gBrowser.tabContainer;

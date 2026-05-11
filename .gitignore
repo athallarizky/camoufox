@@ -13,12 +13,10 @@ launch.exe
 pythonlib/test*
 !pythonlib/tests/
 jsonvv/test*
-/.vscode
 /bundle/fonts/extra
 pythonlib/*.png
 scripts/*.png
 scripts/test*
-.vscode
 .idea
 /tests/*.disabled
 k8s/
@@ -77,4 +75,8 @@ node_modules/
 node_modules/
 proxies.txt
 checks-bundle.js
-.env
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+.gitignore
+config.bat
